@@ -35,7 +35,7 @@ class DefaultData:
             dataset.loc[dataset[col] == "1,87,54", col] = 1.8754
             dataset.loc[dataset[col] == "0,,38", col] = 0.38
         dataset["Мочевая Кислота"] = dataset["Мочевая Кислота"].astype(float)
-        return dataset
+        self.dataset = dataset
 
     def get_X_y(self, medicine, params=None):
         dataset = self.dataset.copy()
@@ -60,7 +60,5 @@ class DefaultData:
         for j in [self.config.targets + self.config.initial_columns]:
             if (j in X.columns):
                 X = X.drop(j, axis=1)
-
-
         return X, y
 
