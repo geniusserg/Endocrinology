@@ -1,6 +1,6 @@
 import numpy as np
+from sklearn.model_selection import LeaveOneOut
 
-from sklearn.model_selection import train_test_split, learning_curve, LearningCurveDisplay, LeaveOneOut, KFold, GridSearchCV
 
 class Model():
     def __init__(self):
