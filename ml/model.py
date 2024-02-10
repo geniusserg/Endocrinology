@@ -1,23 +1,15 @@
-import numpy as np
-from sklearn.model_selection import LeaveOneOut
+import pandas as pd
 
 
 class Model():
     def __init__(self):
         self.model = None
 
-    def run_experiment(self, X, y):
-        cv_loo = LeaveOneOut()
-        y_pred = []
-        y_true = []
-        for idx, (train_index, test_index) in enumerate(cv_loo.split(X)):
-            X_train, X_test, y_train, y_test = X.iloc[train_index, :], \
-                X.iloc[test_index, :], \
-                y[train_index], \
-                y[test_index]
-            self.model.fit(X_train, y_train)
-            y_pred.append(self.model.predict(X_test))
-            y_true.append(y_test[0])
+    def load_model(self):
+        pass
 
-        y_pred = np.array(y_pred).squeeze()
-        return y_pred
+    def predict(self, data):
+        data = pd.DataFrame([data])
+        y_pred = self.model.predict(data)[0]
+        pred_prob = self.model.predict_proba(data)[0][y_pred]
+        return y_pred, pred_prob
