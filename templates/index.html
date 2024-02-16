@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подбор препарата от ожирения</title>
+    <link type="text/css" href="{{ url_for('static', filename='styles.css')}}" rel="stylesheet" />
+</head>
+<body>
+    <div id="welcome"> 
+        <h1>Модель прогнозирования ответа на лечение ожирения</h1> 
+        <p> Данное приложение позволяет спрогнозировать ответ пациента на лечение препаратом от ожирения <em>"Сибутрамин"</em>. <br> Введите показатели пациента и нажмите кнопку <b> Сделать прогноз </b> </p>
+     </div> 
+
+    <form action="" method="POST">
+        {% for field in fields %}
+        <div>
+            <label for="{{ field.name }}">{{ field.name }}</label>
+            <input type="text" name="{{ field.name }}" placeholder="{{ field.placeholder }}" value="{{ field.value }}">
+        </div>
+        {% endfor %}
+        <button type="submit">Сделать прогноз</button>
+    </form>
+
+    {% if result==0 or result==1 %} 
+    <div id="result">
+        <h3>Результаты:</h3>
+        <div id="drug"> <b> Препарат: </b> Сибутрамин</div>
+        <div id="result"> <b> Прогнозируемая потеря веса: </b> <span class="decision-color" style="background-color: {% if result == 0 %} red {% else %} green {% endif %}">
+            {% if result==1 %} больше 5% {% else %} меньше 5% {% endif %}
+        </span></div>
+        <div id="confidence"> <b>  Уверенность:  </b>{{ confidence }}% </div>
+        <br><br>
+        <img src="{{ url_for('static', filename='explanation_shap.jpg')}}" alt="SHAP overall plot">
+    </div>
+    {% endif %} 
+    
+    <br><br><br>
+
+    <img src="{{ url_for('static', filename='shap_sib_a.jpg')}}" alt="SHAP overall plot" width="600" height="300">
+    <figcaption>SHAP график обьяснения модели для Сибутрамина</figcaption>
+
+
+</body>
+</html>

@@ -9,3 +9,4 @@ scipy
 shap
 xgboost
 jupyter
+flask
