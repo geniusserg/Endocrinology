@@ -11,7 +11,7 @@ class Model():
             self.explainer = pickle.load(f)
 
     def predict(self, data):
-        data = pd.DataFrame([data])
+        data = pd.DataFrame([data]).astype(float)
         y_pred = self.model.predict(data)[0]
         pred_prob = self.model.predict_proba(data)[0][y_pred]
         return y_pred, pred_prob
