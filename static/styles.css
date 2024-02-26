@@ -4,11 +4,16 @@ form {
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 label {
     display: block;
     margin-bottom: 5px;
+    color: #555;
 }
 
 input {
@@ -21,15 +26,16 @@ input {
 
 button {
     padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
     border: none;
     border-radius: 3px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #449D48;
+    background-color: #0056b3;
 }
 
 #result, #welcome, #overall_explanation {
@@ -51,4 +57,37 @@ button:hover {
 #welcome p {
     font-size: 16px;
     line-height: 1.5;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: #333;
+}
+
+h3 {
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+select {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+img {
+    max-width: 100%;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
