@@ -2,6 +2,7 @@ import pandas as pd
 import pickle
 import shap
 from matplotlib import pyplot as plt
+import os
 
 class Model():
     def __init__(self, model_path, explainer_path):
@@ -9,6 +10,7 @@ class Model():
             self.model = pickle.load(f)
         with open(explainer_path, "rb") as f:
             self.explainer = pickle.load(f)
+        self.dataset_shap_values = self.explainer(self.explainer.X)
 
     def predict(self, data_input):
         data = {k:data_input[k] for k in self.model.feature_names_in_}
@@ -26,13 +28,13 @@ class Model():
         return shapplot
 
     def partial_explain(self, feature_a, feature_b=None):
-        shap_values = self.explainer(self.explainer.X)
         shap.dependence_plot(
             feature_a,
-            shap_values,
+            self.dataset_shap_values[:, :].values,
             self.explainer.X,
             show=False,
-            interaction_index=feature_b
+            interaction_index=feature_b if feature_b is not None else feature_a
         )
         plt.tight_layout()
-        plt.savefig("partial_shap_plot.jpg")
+        plt.savefig(os.path.join("static", "partial_shap_plot.jpg"))
+

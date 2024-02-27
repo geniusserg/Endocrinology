@@ -45,16 +45,18 @@ def get_partial(feature_a, feature_b=None):
 
 @app.route('/', methods=['GET'])
 def index():
-    if (config["last_data"]  is not None):
+    if (config["last_data"] is not None):
         fields = config["last_data"] 
     else:
         sample_data = config["sample_data"]
-        fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in sample_data] 
-    config["last_data"] = fields
+        fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in sample_data]
+        config["last_data"] = fields
+        config["last_shap_plot"] = None
+        config["last_result"] = (None, None)
     return render_template('index.html', fields = fields, features = config["features"])
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', endpoint="predict", methods=['POST'])
 def submit():
     data = request.form
     fields = config["last_data"]
@@ -75,22 +77,26 @@ def submit():
     shap_frame = f"<head>{shap.getjs()}</head><body>{shap_plot.html()}</body>"
     config["last_data"] = fields
     config["last_shap_plot"] = shap_frame
-    config["last_result"] = result
-    config["last_confidence"] = confidence
-    return render_template('index.html', fields = fields, result = result, confidence = round(confidence*100, 2), shap_plot = shap_frame, features = config["features"])
+    config["last_result"] = (result, confidence)
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, shap_plot = shap_frame, features = config["features"])
 
-# @app.route('/explain', methods=['POST'])
-# def submit():
-#     data = request.form
-#     feature_a = get_partial(data.get("feature1", ""))
-#     feature_b = get_partial(data.get("feature2", None))
-#     get_partial(feature_a, feature_b)
-#     return render_template('index.html', fields = config["last_data"], 
-#                         result = config["last_result"],
-#                         confidence = round( config["last_confidence"]*100, 2),
-#                         shap_plot = config["last_shap_plot"],
-#                         features = config["features"],
-#                         )
+@app.route('/explain', endpoint="explain", methods=['POST'])
+def submit():
+    data = request.form
+    feature_a = data.get("feature1", config["features"][0])
+    feature_b = data.get("feature2", None)
+    get_partial(feature_a, feature_b)
+    if (os.path.exists(os.path.join("static", "partial_shap_plot.jpg"))):
+        print("OK !")
+    else:
+        print(f'NO {os.path.join("static", "partial_shap_plot.jpg")}')
+    return render_template('index.html', fields = config["last_data"], 
+            result = config["last_result"][0],
+            confidence = config["last_result"][1],
+            shap_plot = config["last_shap_plot"],
+            features = config["features"]+[None],
+            image_path = True
+    )
 
 
 if __name__ == '__main__':

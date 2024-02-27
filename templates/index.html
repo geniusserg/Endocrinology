@@ -29,7 +29,7 @@
         <div id="result"> <b> Прогнозируемая потеря веса: </b> <span class="decision-color" style="background-color: {% if result == 0 %} red {% else %} green {% endif %}">
             {% if result==1 %} больше 5% {% else %} меньше 5% {% endif %}
         </span></div>
-        <div id="confidence"> <b>  Уверенность:  </b>{{ confidence }}% </div>
+        <div id="confidence"> <b>  Уверенность:  </b>{{ confidence*100|round(1)}}% </div>
         <br><br>
         <iframe srcdoc="{{ shap_plot }}" width="923" height="200"></iframe>
     </div>
@@ -38,7 +38,7 @@
     <br><br><br>
 
     <div id="partial dependency">
-        <h3>Частичная зависимость</h3>
+        <h3>Влияние значения параметров на решение моделей</h3>
 
         <p>Выберите параметры чтобы посмотреть, как они влияют на итоговые решения модели</p>
         <form action="/explain" method="post">
