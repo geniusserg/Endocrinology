@@ -32,6 +32,9 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     model.predict(sample_data)
 
     config["last_data"] = None
+    config["last_shap_plot"] = None
+    config["last_result"] = (None, None)
+    config["features"] = model.get_features()
 
 
 def run_model(input_data):
@@ -49,7 +52,7 @@ def index():
         fields = config["last_data"] 
     else:
         sample_data = config["sample_data"]
-        fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in sample_data]
+        fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in config["features"]]
         config["last_data"] = fields
         config["last_shap_plot"] = None
         config["last_result"] = (None, None)
@@ -83,18 +86,19 @@ def submit():
 @app.route('/explain', endpoint="explain", methods=['POST'])
 def submit():
     data = request.form
-    feature_a = data.get("feature1", config["features"][0])
+    feature_a = data.get("feature1", None)
     feature_b = data.get("feature2", None)
-    get_partial(feature_a, feature_b)
-    if (os.path.exists(os.path.join("static", "partial_shap_plot.jpg"))):
-        print("OK !")
-    else:
-        print(f'NO {os.path.join("static", "partial_shap_plot.jpg")}')
+    if (feature_a in config["features"]):
+        get_partial(feature_a, feature_b if feature_b in config["features"] else None)
+        if (os.path.exists(os.path.join("static", "partial_shap_plot.jpg"))):
+            print("OK !")
+        else:
+            print(f'NO {os.path.join("static", "partial_shap_plot.jpg")}')
     return render_template('index.html', fields = config["last_data"], 
             result = config["last_result"][0],
             confidence = config["last_result"][1],
             shap_plot = config["last_shap_plot"],
-            features = config["features"]+[None],
+            features = config["features"],
             image_path = True
     )
 

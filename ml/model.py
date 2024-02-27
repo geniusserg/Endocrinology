@@ -12,6 +12,9 @@ class Model():
             self.explainer = pickle.load(f)
         self.dataset_shap_values = self.explainer(self.explainer.X)
 
+    def get_features(self):
+        return self.model.feature_names_in_
+
     def predict(self, data_input):
         data = {k:data_input[k] for k in self.model.feature_names_in_}
         data = pd.DataFrame([data]).astype(float)

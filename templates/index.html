@@ -44,6 +44,7 @@
         <form action="/explain" method="post">
             <label for="feature1">Select Feature 1:</label>
             <select name="feature1" id="feature1">
+                <option hidden selected>Выберите параметр</option>
                 {% for feature in features %}
                     <option value="{{ feature }}">{{ feature }}</option>
                 {% endfor %}
@@ -51,6 +52,7 @@
 
             <label for="feature2">Select Feature 2:</label>
             <select name="feature2" id="feature2">
+                <option hidden selected>Выберите параметр</option>
                 {% for feature in features %}
                     <option value="{{ feature }}">{{ feature }}</option>
                 {% endfor %}
