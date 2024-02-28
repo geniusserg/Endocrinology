@@ -45,7 +45,6 @@ def switch_mode(mode):
     model = config[config["mode"]]
     model.overall_shap_plot()
     config["features"] = model.get_features()
-    config["features"] = config["features"]
 
 def run_model(input_data):
     return model.predict(input_data)
