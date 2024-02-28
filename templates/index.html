@@ -31,7 +31,11 @@
         </span></div>
         <div id="confidence"> <b>  Уверенность:  </b>{{ confidence*100|round(1)}}% </div>
         <br><br>
-        <iframe srcdoc="{{ shap_plot }}" width="923" height="200"></iframe>
+        <!-- <iframe srcdoc="{{ shap_plot }}" width="923" height="200"></iframe> !--> 
+        <div class="box">
+            <img src="{{ url_for('static', filename='explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+        </div>
+
     </div>
     {% endif %} 
     
@@ -60,15 +64,20 @@
 
             <button type="submit">Generate Plot</button>
         </form>
-
+        <br>
         {% if image_path %}
-            <img src="{{ url_for('static', filename='partial_shap_plot.jpg') }}" alt="Partial Dependence Plot">
+        <div class="box" id="partial_box">
+            <img src="{{ url_for('static', filename='partial_explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+        </div>
         {% endif %}
 
     </div>
+    <br><br><br>
     <div id="overall_explanation">
         <h3>SHAP график обьяснения модели для Сибутрамина</h3>
-        <img src="{{ url_for('static', filename='plot.jpg') }}" alt="SHAP overall plot" width="640" height="480">
+        <div class="box">
+            <img src="{{ url_for('static', filename='overall_plot.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+        </div>
         <figcaption>SHAP график обьяснения модели для Сибутрамина</figcaption>
     </div>
 

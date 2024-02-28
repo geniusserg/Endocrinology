@@ -1,8 +1,11 @@
 import pandas as pd
 import pickle
 import shap
-from matplotlib import pyplot as plt
 import os
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import rcParams, pyplot as plt
+rcParams.update({'figure.autolayout': True})
 
 class Model():
     def __init__(self, model_path, explainer_path):
@@ -27,17 +30,20 @@ class Model():
         data = {k:data_input[k] for k in self.model.feature_names_in_}
         data = pd.DataFrame(data, index=[0])
         shap_values = self.explainer(data)
-        shapplot = shap.plots.force(shap_values)
-        return shapplot
+        plt.ioff(); fig = plt.figure()
+        shap.plots.waterfall(shap_values[0, :], show=False)
+        plt.savefig(os.path.join("static", "explain.jpg")); plt.close(fig)
+        return "explain.jpg"
 
     def partial_explain(self, feature_a, feature_b=None):
-        shap.dependence_plot(
+        plt.ioff(); fig = plt.figure()
+        shapplot = shap.dependence_plot(
             feature_a,
             self.dataset_shap_values[:, :].values,
             self.explainer.X,
-            show=False,
-            interaction_index=feature_b if feature_b is not None else feature_a
+            interaction_index=feature_b if feature_b is not None else feature_a,
+            show=False
         )
-        plt.tight_layout()
-        plt.savefig(os.path.join("static", "partial_shap_plot.jpg"))
+        plt.savefig(os.path.join("static", "partial_explain.jpg")); plt.close(fig)
+        return shapplot
 
