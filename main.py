@@ -10,6 +10,10 @@ import shutil
 
 app = Flask(__name__,  template_folder='templates')
 
+########
+# Model
+########
+
 config: dict = None
 model: Model = None
 
@@ -17,18 +21,13 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     global config, model
     config = json.load(open(config_json_path, "r", encoding="utf-8"))
 
-    for model_configuration in ["model_a_path", "model_b_path"]:
+    for model_configuration in ["model_3month", "model_6month"]:
         snapshot_name = config[model_configuration]
         classifier_path = os.path.join(model_snapshots_dir, snapshot_name, "model.pkl")
         explainer_path = os.path.join(model_snapshots_dir, snapshot_name, "explainer.pkl")
-        data_path = os.path.join(model_snapshots_dir, snapshot_name, "data.csv")
-        shap_overall_plot = os.path.join(model_snapshots_dir, snapshot_name, "shap_overall.jpg")
-
         config[model_configuration] = Model(model_path = classifier_path, explainer_path = explainer_path)
-        if (os.path.exists(shap_overall_plot)):
-            shutil.copyfile(shap_overall_plot, os.path.join("static", "overall_plot.jpg"))
 
-    model = config["model_a_path"] # by defult select model for 3 months
+    switch_mode("model_3month")
 
     # small test on Model work
     sample_data = config["sample_data"]
@@ -37,8 +36,16 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     config["last_data"] = None
     config["last_shap_plot"] = None
     config["last_result"] = (None, None)
-    config["features"] = model.get_features()
 
+def switch_mode(mode):
+    global model, config
+    if (("mode" in config) and (config["mode"] == mode)):
+        return
+    config["mode"] = mode
+    model = config[config["mode"]]
+    model.overall_shap_plot()
+    config["features"] = model.get_features()
+    config["features"] = config["features"]
 
 def run_model(input_data):
     return model.predict(input_data)
@@ -49,22 +56,31 @@ def get_explanation(input_data):
 def get_partial(feature_a, feature_b=None):
     return model.partial_explain(feature_a, feature_b)
 
+######
+# GUI 
+######
 
-@app.route('/', methods=['GET'])
-def index():
+# Render application (TODO: make common to all)
+def render_welcome_page():
     if (config["last_data"] is not None):
         fields = config["last_data"] 
     else:
         sample_data = config["sample_data"]
         fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in config["features"]]
         config["last_data"] = fields
-        config["last_shap_plot"] = None
         config["last_result"] = (None, None)
-    return render_template('index.html', fields = fields, features = config["features"])
+    return render_template('index.html', fields = fields, features = config["features"], mode = config["mode"])
+
+@app.route('/', methods=['GET'])
+def index():
+    if "mode" in request.args:
+        switch_mode(request.args["mode"])
+    return render_welcome_page()
 
 
+# Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
-def submit():
+def predict():
     data = request.form
     fields = [{"name": i, "placeholder": "Введите значение", "value": data.get(i, '') } for i in config["features"]]
     input_data = {}
@@ -77,11 +93,13 @@ def submit():
         else:
             input_data[p] = None
     result, confidence = run_model(input_data)
-    shap_plot = get_explanation(input_data)
+    get_explanation(input_data)
     config["last_data"] = fields
     config["last_result"] = (result, confidence)
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"])
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"])
 
+
+# Partial explain model
 @app.route('/explain', endpoint="explain", methods=['POST'])
 def explain():
     data = request.form
@@ -89,20 +107,17 @@ def explain():
     feature_b = data.get("feature2", None)
     if (feature_a in config["features"]):
         get_partial(feature_a, feature_b if feature_b in config["features"] else None)
-        if (os.path.exists(os.path.join("static", "partial_shap_plot.jpg"))):
-            print("OK !")
-        else:
-            print(f'NO {os.path.join("static", "partial_shap_plot.jpg")}')
     return render_template('index.html', fields = config["last_data"], 
             result = config["last_result"][0],
             confidence = config["last_result"][1],
             features = config["features"],
-            image_path = True
+            image_path = True,
+            mode = config["mode"]
     )
 
 
 if __name__ == '__main__':
-    # Load some configurations
+    # Load configurations
     load_global_config(
         "config.json",
         "model_snapshots"

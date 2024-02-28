@@ -12,6 +12,12 @@
         <p> Данное приложение позволяет спрогнозировать ответ пациента на лечение препаратом от ожирения <em>"Сибутрамин"</em>. <br> Введите показатели пациента и нажмите кнопку <b> Сделать прогноз </b> </p>
      </div> 
 
+    <form action="/" method="GET">
+        <p>Выберите режим работы </p>    
+        <button style = {% if mode=='model_3month' %} "background-color: aqua;" {% else %} "background-color: gray;" {% endif %}  type="submit" name="mode" value="model_3month" >Первый визит пациента</button>
+        <button style = {% if mode=='model_6month' %} "background-color: aqua;" {% else %} "background-color: gray;" {% endif %}  type="submit" name="mode" value="model_6month" > Визит  через  3 месяца</button>
+    </form>
+
     <form action="/predict" method="POST">
         {% for field in fields %}
         <div>
@@ -65,18 +71,20 @@
             <button type="submit">Generate Plot</button>
         </form>
         <br>
-        {% if image_path %}
         <div class="box" id="partial_box">
-            <img src="{{ url_for('static', filename='partial_explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+            {% if image_path %}
+                <img src="{{ url_for('static', filename='partial_explain.jpg') }}" width="923" height="250" alt="Partial Dependence Plot">
+            {% else %}
+            <p style="font-size: 5;"> Параметры не выбраны </p>
+            {% endif %}
         </div>
-        {% endif %}
 
     </div>
     <br><br><br>
     <div id="overall_explanation">
-        <h3>SHAP график обьяснения модели для Сибутрамина</h3>
+        <h3>SHAP график обьяснения модели для Сибутрамина {% if mode=='model_3month' %} для первого визита {% else %} для визита после 3 месяцев лечения {% endif %}</h3>
         <div class="box">
-            <img src="{{ url_for('static', filename='overall_plot.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+            <img src="{{ url_for('static', filename='overall_explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
         </div>
         <figcaption>SHAP график обьяснения модели для Сибутрамина</figcaption>
     </div>

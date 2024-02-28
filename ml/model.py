@@ -37,7 +37,7 @@ class Model():
 
     def partial_explain(self, feature_a, feature_b=None):
         plt.ioff(); fig = plt.figure()
-        shapplot = shap.dependence_plot(
+        shap.dependence_plot(
             feature_a,
             self.dataset_shap_values[:, :].values,
             self.explainer.X,
@@ -45,5 +45,10 @@ class Model():
             show=False
         )
         plt.savefig(os.path.join("static", "partial_explain.jpg")); plt.close(fig)
-        return shapplot
+        return "partial_explain.jpg"
 
+    def overall_shap_plot(self):
+        plt.ioff(); fig = plt.figure()
+        shap.summary_plot(self.dataset_shap_values[:, :].values, self.explainer.X, show=False)
+        plt.savefig(os.path.join("static", "overall_explain.jpg")); plt.close(fig)
+        return "overall_explain.jpg"
