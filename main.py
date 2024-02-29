@@ -61,13 +61,9 @@ def get_partial(feature_a, feature_b=None):
 
 # Render application (TODO: make common to all)
 def render_welcome_page():
-    if (config["last_data"] is not None):
-        fields = config["last_data"] 
-    else:
-        sample_data = config["sample_data"]
-        fields = [{"name": i, "placeholder": "Введите значение", "default": sample_data[i], "value": sample_data[i] } for i in config["features"]]
-        config["last_data"] = fields
-        config["last_result"] = (None, None)
+    data = config["sample_data"] if config["last_data"] is None else config["last_data"]
+    fields = [{"name": i, "placeholder": "Введите значение", "value": data[i] if i in data else config["sample_data"][i] } for i in config["features"]]
+    config["last_result"] = (None, None)
     return render_template('index.html', fields = fields, features = config["features"], mode = config["mode"])
 
 @app.route('/', methods=['GET'])
@@ -75,7 +71,6 @@ def index():
     if "mode" in request.args:
         switch_mode(request.args["mode"])
     return render_welcome_page()
-
 
 # Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
@@ -93,7 +88,7 @@ def predict():
             input_data[p] = None
     result, confidence = run_model(input_data)
     get_explanation(input_data)
-    config["last_data"] = fields
+    config["last_data"] = {i["name"]: i["value"] for i in fields}
     config["last_result"] = (result, confidence)
     return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"])
 
