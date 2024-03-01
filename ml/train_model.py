@@ -13,7 +13,7 @@ class Dataset:
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
         self.dataset = pd.read_excel(self.dataset_path)
-        with open("data_preprocessing/columns.json", "r", encoding="utf-8") as f:
+        with open("columns.json", "r", encoding="utf-8") as f:
             self.config = json.load(f)
         
 

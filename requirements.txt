@@ -1,12 +1,8 @@
 pandas
 numpy
-tqdm
 openpyxl
-graphviz
 matplotlib
 scikit-learn
-scipy
 shap
 xgboost
-jupyter
 flask
