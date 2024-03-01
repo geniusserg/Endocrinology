@@ -101,7 +101,9 @@ def explain():
     feature_b = data.get("feature2", None)
     if (feature_a in config["features"]):
         get_partial(feature_a, feature_b if feature_b in config["features"] else None)
-    return render_template('index.html', fields = config["last_data"], 
+    data = config["sample_data"] if config["last_data"] is None else config["last_data"]
+    fields = [{"name": i, "placeholder": "Введите значение", "value": data[i] if i in data else config["sample_data"][i] } for i in config["features"]]
+    return render_template('index.html', fields = fields, 
             result = config["last_result"][0],
             confidence = config["last_result"][1],
             features = config["features"],
