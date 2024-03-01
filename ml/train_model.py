@@ -64,7 +64,8 @@ class Dataset:
 
         # выбросы
         dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 15)].index)
-
+        dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 8) & (dataset["Возраст"] > 40)].index)
+        
         self.dataset = dataset
         
     
@@ -131,7 +132,7 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
 # 6 months
 
 dt = Dataset(dataset_path="data/dataset_almazov_november.xlsx"); dt.preprocess(agroup_params_only=False)
-params_good = ["ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
+params_good = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
 # params_good = ['Возраст', "ДАД", "OXC", 'СКФ', "Глюкоза", "ИМТ 0 мес", "ИМТ 3 мес", "Лептинрезистентность", "СРБ"]
 X, y = dt.get_X_y("SIB", 7, params=params_good, target_type="both")
 model = XGBClassifier()
@@ -144,7 +145,7 @@ print(f"model saved : {experiment_name}")
 # 3 months
 
 dt = Dataset(dataset_path="data/dataset_almazov_november.xlsx"); dt.preprocess(agroup_params_only=False)
-params_good = ["ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC"]
+params_good =  ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC"]
 X, y = dt.get_X_y("SIB", 5, params=params_good, target_type="A")
 model = XGBClassifier()
 model.fit(X, y)
