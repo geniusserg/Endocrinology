@@ -33,7 +33,7 @@
         <h3>Результаты:</h3>
         <div id="drug"> <b> Препарат: </b> Сибутрамин</div>
         <div id="result"> <b> Прогнозируемая потеря веса: </b> <span class="decision-color" style="background-color: {% if result == 0 %} red {% else %} green {% endif %}">
-            {% if result==1 %} больше 5% {% else %} меньше 5% {% endif %}
+            {% if result==1 %} больше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% else %} меньше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% endif %}
         </span></div>
         <div id="confidence"> <b>  Уверенность:  </b>{{ confidence*100|round(1)}}% </div>
         <br><br>

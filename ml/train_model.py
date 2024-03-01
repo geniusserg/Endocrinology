@@ -64,8 +64,9 @@ class Dataset:
 
         # выбросы
         dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 15)].index)
-        dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 8) & (dataset["Возраст"] > 40)].index)
-        
+        dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 6 мес"] > 15)].index)
+        dataset.loc[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 5) & (dataset["Возраст"] > 50), "% потери веса 3 мес"] = 4
+
         self.dataset = dataset
         
     
