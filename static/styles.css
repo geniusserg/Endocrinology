@@ -10,6 +10,16 @@ form {
     align-items: center;
 }
 
+#div_with_form { /* Левая колонка */
+    float: left; /* Обтекание справа */
+    width: 20%; /* Ширина колонки */
+}
+
+#div_with_output { /* Правая колонка */
+margin-left: 21%; /* Отступ слева */
+}
+
+
 label {
     display: block;
     margin-bottom: 5px;

@@ -60,9 +60,12 @@ def get_partial(feature_a, feature_b=None):
 ######
 
 # Render application (TODO: make common to all)
-def render_welcome_page():
+def render_page():
     data = config["sample_data"] if config["last_data"] is None else config["last_data"]
-    fields = [{"name": i, "placeholder": "Введите значение", "value": data[i] if i in data else config["sample_data"][i] } for i in config["features"]]
+    fields = [{"name": i, 
+               "description": i if i not in config["descriptions"] else config["descriptions"][i],
+               "placeholder": "Введите значение", 
+               "value": data[i] if i in data else config["sample_data"][i] } for i in config["features"]]
     config["last_result"] = (None, None)
     return render_template('index.html', fields = fields, features = config["features"], mode = config["mode"])
 
@@ -70,13 +73,14 @@ def render_welcome_page():
 def index():
     if "mode" in request.args:
         switch_mode(request.args["mode"])
-    return render_welcome_page()
+    return render_page()
 
 # Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
 def predict():
     data = request.form
     fields = [{"name": i, "placeholder": "Введите значение", "value": data.get(i, '') } for i in config["features"]]
+    render_page()
     input_data = {}
     for p in data:
         if data[p] != '':
