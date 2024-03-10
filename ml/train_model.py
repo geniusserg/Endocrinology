@@ -130,27 +130,43 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     return f"{snapshot_folder}/{experiment_name}_{formatted_datetime}"
 
 
-# 6 months
 
 dt = Dataset(dataset_path="data/dataset_almazov_november.xlsx"); dt.preprocess(agroup_params_only=False)
-params_good = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
-# params_good = ['Возраст', "ДАД", "OXC", 'СКФ', "Глюкоза", "ИМТ 0 мес", "ИМТ 3 мес", "Лептинрезистентность", "СРБ"]
-X, y = dt.get_X_y("SIB", 7, params=params_good, target_type="both")
-model = XGBClassifier()
-model.fit(X, y)
-experiment_name = "xgboost_agroup_6month"
-exp_name = save_experiment(model, X, y, experiment_name)
 
-print(f"model saved : {experiment_name}")
 
 # 3 months
-
-dt = Dataset(dataset_path="data/dataset_almazov_november.xlsx"); dt.preprocess(agroup_params_only=False)
-params_good =  ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC"]
-X, y = dt.get_X_y("SIB", 5, params=params_good, target_type="A")
+params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC"]
+X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
 model = XGBClassifier()
 model.fit(X, y)
 experiment_name = "xgboost_agroup_3month"
 exp_name = save_experiment(model, X, y, experiment_name)
+print(f"Model saved: {exp_name}")
 
-print(f"model saved : {experiment_name}")
+# 6 months
+params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
+X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
+model = XGBClassifier()
+model.fit(X, y)
+experiment_name = "xgboost_agroup_6month"
+exp_name = save_experiment(model, X, y, experiment_name)
+print(f"Model saved: {exp_name}")
+
+# 3 months
+
+params = ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'Проколлаген 1 типа нг/мл (183-244) 0 мес', 'Проколлаген 3 типа пг/мл (11178-36957) 0 мес', 'MMP-9 нг/мл (450-1351) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
+X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
+model = XGBClassifier()
+model.fit(X, y)
+experiment_name = "xgboost_bgroup_3month"
+exp_name = save_experiment(model, X, y, experiment_name)
+print(f"Model saved: {exp_name}")
+# 6 months
+
+params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес']
+X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
+model = XGBClassifier()
+model.fit(X, y)
+experiment_name = "xgboost_bgroup_6month"
+exp_name = save_experiment(model, X, y, experiment_name)
+print(f"Model saved: {exp_name}")
