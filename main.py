@@ -29,10 +29,6 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
 
     switch_mode("model_3month")
 
-    # small test on Model work
-    sample_data = config["sample_data"]
-    model.predict(sample_data)
-
     config["last_data"] = None
     config["last_shap_plot"] = None
     config["last_result"] = (None, None)
@@ -62,7 +58,8 @@ def get_partial(feature_a, feature_b=None):
 # Render application (TODO: make common to all)
 def render_welcome_page():
     data = config["sample_data"] if config["last_data"] is None else config["last_data"]
-    fields = [{"name": i, "placeholder": "Введите значение", "value": data[i] if i in data else config["sample_data"][i] } for i in config["features"]]
+    data = {i: data[i] if i in data else '' for i in config["features"]}
+    fields = [{"name": i, "placeholder": "Введите значение", "value": data[i]} for i in config["features"]]
     config["last_result"] = (None, None)
     return render_template('index.html', fields = fields, features = config["features"], mode = config["mode"])
 
