@@ -8,12 +8,13 @@ import pandas as pd
 import json
 from xgboost import XGBClassifier
 import numpy as np
+import shutil
 
 class Dataset:
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
         self.dataset = pd.read_excel(self.dataset_path)
-        with open("data_preprocessing/columns.json", "r", encoding="utf-8") as f:
+        with open("columns.json", "r", encoding="utf-8") as f:
             self.config = json.load(f)
         
 
@@ -108,12 +109,12 @@ class Dataset:
 def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snapshots"):
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%d_%m_%H")
-    if (not os.path.exists(f"{snapshot_folder}/{experiment_name}_{formatted_datetime}")):
-        os.mkdir(f"{snapshot_folder}/{experiment_name}_{formatted_datetime}")
-    model_path = f"{snapshot_folder}/{experiment_name}_{formatted_datetime}/model.pkl"
-    expaliner_path = f"{snapshot_folder}/{experiment_name}_{formatted_datetime}/explainer.pkl"
-    plot_path = f"{snapshot_folder}/{experiment_name}_{formatted_datetime}/shap_overall.jpg"
-    data_path = f"{snapshot_folder}/{experiment_name}_{formatted_datetime}/data.csv"
+    if (not os.path.exists(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime))):
+        os.mkdir(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime))
+    model_path = os.path.join("..", snapshot_folder, experiment_name, formatted_datetime, "model.pkl")
+    expaliner_path = os.path.join("..", snapshot_folder, experiment_name, formatted_datetime, "explainer.pkl")
+    plot_path = os.path.join("..", snapshot_folder, experiment_name, formatted_datetime, "shap_overall.jpg")
+    data_path = os.path.join("..", snapshot_folder, experiment_name, formatted_datetime, "data.csv")
 
     model.fit(X, y)
     explainer = shap.TreeExplainer(model, X)
@@ -127,11 +128,12 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     shap.summary_plot(explainer(X)[:, :], X, show=False)
     plt.tight_layout()
     plt.savefig(plot_path)
-    return f"{snapshot_folder}/{experiment_name}_{formatted_datetime}"
+    shutil.copytree(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime), os.path.join("..", snapshot_folder, experiment_name), dirs_exist_ok=True)
+    return f"{snapshot_folder}/{experiment_name}"
 
 
 
-dt = Dataset(dataset_path="data/dataset_almazov_november.xlsx"); dt.preprocess(agroup_params_only=False)
+dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(agroup_params_only=False)
 
 
 # 3 months
@@ -139,7 +141,7 @@ params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрези�
 X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
 model = XGBClassifier()
 model.fit(X, y)
-experiment_name = "xgboost_agroup_3month"
+experiment_name = "model_agroup_3month"
 exp_name = save_experiment(model, X, y, experiment_name)
 print(f"Model saved: {exp_name}")
 
@@ -148,7 +150,7 @@ params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезис
 X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
 model = XGBClassifier()
 model.fit(X, y)
-experiment_name = "xgboost_agroup_6month"
+experiment_name = "model_agroup_6month"
 exp_name = save_experiment(model, X, y, experiment_name)
 print(f"Model saved: {exp_name}")
 
@@ -158,7 +160,7 @@ params = ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезис
 X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
 model = XGBClassifier()
 model.fit(X, y)
-experiment_name = "xgboost_bgroup_3month"
+experiment_name = "model_bgroup_3month"
 exp_name = save_experiment(model, X, y, experiment_name)
 print(f"Model saved: {exp_name}")
 # 6 months
@@ -167,6 +169,6 @@ params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезис
 X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
 model = XGBClassifier()
 model.fit(X, y)
-experiment_name = "xgboost_bgroup_6month"
+experiment_name = "model_bgroup_6month"
 exp_name = save_experiment(model, X, y, experiment_name)
 print(f"Model saved: {exp_name}")

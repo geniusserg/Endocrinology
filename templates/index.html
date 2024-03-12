@@ -10,85 +10,92 @@
     <div id="welcome"> 
         <h1>Модель прогнозирования ответа на лечение ожирения</h1> 
         <p> Данное приложение позволяет спрогнозировать ответ пациента на лечение препаратом от ожирения <em>"Сибутрамин"</em>. <br> Введите показатели пациента и нажмите кнопку <b> Сделать прогноз </b> </p>
-     </div> 
-
-    <form action="/" method="GET">
-        <p>Выберите режим работы </p>    
-        <button style = {% if mode=='model_3month' %} "background-color: aqua;" {% else %} "background-color: gray;" {% endif %}  type="submit" name="mode" value="model_3month" >Первый визит пациента</button>
-        <button style = {% if mode=='model_6month' %} "background-color: aqua;" {% else %} "background-color: gray;" {% endif %}  type="submit" name="mode" value="model_6month" > Визит  через  3 месяца</button>
-    </form>
-
-    <form action="/predict" method="POST">
-        {% for field in fields %}
-        <div>
-            <label for="{{ field.name }}">{{ field.name }}</label>
-            <input type="text" name="{{ field.name }}" placeholder="{{ field.placeholder }}" value="{{ field.value }}">
-        </div>
-        {% endfor %}
-        <button type="submit">Сделать прогноз</button>
-    </form>
-
-    {% if result==0 or result==1 %} 
-    <div id="result">
-        <h3>Результаты:</h3>
-        <div id="drug"> <b> Препарат: </b> Сибутрамин</div>
-        <div id="result"> <b> Прогнозируемая потеря веса: </b> <span class="decision-color" style="background-color: {% if result == 0 %} red {% else %} green {% endif %}">
-            {% if result==1 %} больше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% else %} меньше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% endif %}
-        </span></div>
-        <div id="confidence"> <b>  Уверенность:  </b>{{ confidence*100|round(1)}}% </div>
-        <br><br>
-        <!-- <iframe srcdoc="{{ shap_plot }}" width="923" height="200"></iframe> !--> 
-        <div class="box">
-            <img src="{{ url_for('static', filename='explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
-        </div>
-
-    </div>
-    {% endif %} 
-    
-    <br><br><br>
-
-    <div id="partial dependency">
-        <h3>Влияние значения параметров на решение моделей</h3>
-
-        <p>Выберите параметры чтобы посмотреть, как они влияют на итоговые решения модели</p>
-        <form action="/explain" method="post">
-            <label for="feature1">Select Feature 1:</label>
-            <select name="feature1" id="feature1">
-                <option hidden selected>Выберите параметр</option>
-                {% for feature in features %}
-                    <option value="{{ feature }}">{{ feature }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="feature2">Select Feature 2:</label>
-            <select name="feature2" id="feature2">
-                <option hidden selected>Выберите параметр</option>
-                {% for feature in features %}
-                    <option value="{{ feature }}">{{ feature }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Generate Plot</button>
+    </div> 
+    <div class="container">
+    <div class="form">
+        <form action="/" method="GET">
+            <div id = "buttons">
+                <p>Выберите режим работы: </p>    
+                <button style = {% if mode=='model_3month' %} "background-color: aqua; {% else %} "background-color: gray; {% endif %} width:100%;"  type="submit" name="mode" value="model_3month" >Первый визит пациента</button>
+                <button style = {% if mode=='model_6month' %} "background-color: aqua; {% else %} "background-color: gray; {% endif %} width:100%;" type="submit" name="mode" value="model_6month" > Визит  через  3 месяца</button>
+            </div>
+            <br>
+            <a> Использовать дополнительные параметры (гормоны, РНК и т.д.) </a>
+            <label class="custom-checkbox">
+                <input type="checkbox" name="extra" {{ checked }}>
+                <span class="checkmark">  </span>
+            </label>
+            <br>
         </form>
-        <br>
-        <div class="box" id="partial_box">
-            {% if image_path %}
-                <img src="{{ url_for('static', filename='partial_explain.jpg') }}" width="923" height="250" alt="Partial Dependence Plot">
-            {% else %}
-            <p style="font-size: 5;"> Параметры не выбраны </p>
-            {% endif %}
+        <form action="/predict" method="POST">
+            {% for field in fields %}
+            <div id="paramform">
+                <label for="{{ field.name }}">{{ field.description }}</label>
+                <input type="text" name="{{ field.name }}" placeholder="{{ field.placeholder }}" value="{{ field.value }}">
+            </div>
+            {% endfor %}
+            <button type="submit">Сделать прогноз</button>
+        </form>    
+    </div>
+
+    <div class="info">
+        {% if result==0 or result==1 %} 
+        <div id="result">
+            <h3>Результаты:</h3>
+            <p><b> Препарат: </b> Сибутрамин </p>
+            <b> Прогнозируемая потеря веса: </b>
+            <span class="decision-color" style="background-color: {% if result == 0 %} #CD5C5C {% else %} #90EE90 {% endif %}">
+                {% if result==1 %} больше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% else %} меньше {% if mode=='model_3month' %} 5 {% else %} 7 {% endif %} % {% endif %}
+            </span>
+            <p><b>  Уверенность:  </b>{{ confidence }}% </p>
+            <div class="box">
+                <img src="{{ url_for('static', filename='explain.jpg') }}" alt="Partial Dependence Plot">
+            </div>
+        </div>
+        {% endif %} 
+    
+
+        <div id="partial dependency">
+            <h3>Влияние значения параметров на решение моделей</h3>
+            <p>Выберите параметры чтобы посмотреть, как они влияют на итоговые решения модели (через график чисел Шэпли)</p>
+
+            <form action="/explain" method="post">
+                <div id="buttons">
+                    <label for="feature1">Выберите основной параметр:</label>
+
+                    <select name="feature1" id="feature1">
+                        {% for feature in features %}
+                            <option value="{{ feature }}">{{ feature }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="feature2">Выберите дополнительный параметр:</label>
+                    <select name="feature2" id="feature2">
+                        <option hidden selected>-</option>
+                        {% for feature in features %}
+                            <option value="{{ feature }}">{{ feature }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit">Сгенерировать график</button>
+                </div>
+            </form>
+ 
+            <div id="partial_box">
+                {% if image_path %}
+                    <img src="{{ url_for('static', filename='partial_explain.jpg') }}"  alt="Partial Dependence Plot">
+                {% else %}
+                    <p style="font-size: 5;"> Параметры не выбраны </p>
+                {% endif %}
+            </div>
         </div>
 
-    </div>
-    <br><br><br>
     <div id="overall_explanation">
         <h3>SHAP график обьяснения модели для Сибутрамина {% if mode=='model_3month' %} для первого визита {% else %} для визита после 3 месяцев лечения {% endif %}</h3>
         <div class="box">
-            <img src="{{ url_for('static', filename='overall_explain.jpg') }}" width="923" height="200" alt="Partial Dependence Plot">
+            <img src="{{ url_for('static', filename='overall_explain.jpg') }}" alt="Partial Dependence Plot">
         </div>
-        <figcaption>SHAP график обьяснения модели для Сибутрамина</figcaption>
     </div>
-
-
+    </div>
+    </div>
 </body>
 </html>
