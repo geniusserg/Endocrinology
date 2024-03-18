@@ -1,12 +1,8 @@
 pandas
 numpy
-tqdm
-openpyxl
-graphviz
 matplotlib
-scikit-learn
-scipy
-shap
-xgboost
-jupyter
+openpyxl==3.1.2
+scikit-learn==1.4.1.post1
+shap==0.44.1
+xgboost==2.0.3
 flask

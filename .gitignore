@@ -2,6 +2,8 @@
 static/*.jpg
 
 venv/*
+venv_dev/*
+
 .idea/*
 .ipynb_checkpoints
 */.ipynb_checkpoints
