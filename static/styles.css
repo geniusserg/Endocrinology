@@ -38,7 +38,7 @@ input {
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    font-size: 24px; 
+    font-size: 12px; 
 }
 
 button {
@@ -49,7 +49,7 @@ button {
     background-color: #007bff;
     color: #fff;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 12px;
 }
 
 button:hover {
@@ -78,12 +78,12 @@ button:hover {
 }
 
 #welcome h1 {
-    font-size: 36px;
+    font-size: 20px;
     margin-bottom: 10px;
 }
 
 #welcome p {
-    font-size: 24px;
+    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -95,7 +95,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 24px; 
+    font-size: 14px; 
 }
 
 h1 {
@@ -112,7 +112,7 @@ h3 {
 select {
     padding: 5px;
     margin-bottom: 10px;
-    font-size: 24px; 
+    font-size: 12px; 
     width: 100%;
 }
 
