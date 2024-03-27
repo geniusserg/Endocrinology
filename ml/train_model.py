@@ -18,7 +18,7 @@ class Dataset:
             self.config = json.load(f)
         
 
-    def preprocess(self, agroup_params_only=True):
+    def preprocess(self, medicine="SIB", agroup_params_only=True):
         dataset = self.dataset.copy()
         parameters_truncated = self.config["parameters_truncated"]
         columns_list = self.config["all_parameters"]
@@ -63,19 +63,32 @@ class Dataset:
             dataset.loc[dataset[col] == "0,,38", col] = 0.38
         dataset["Мочевая Кислота"] = dataset["Мочевая Кислота"].astype(float)
 
-        # выбросы
-        dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 15)].index)
-        dataset = dataset.drop(dataset[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 6 мес"] > 15)].index)
-        dataset.loc[(dataset["Лечение"] == "SIB") & (dataset["% потери веса 3 мес"] > 5) & (dataset["Возраст"] > 50), "% потери веса 3 мес"] = 4
+        dataset["Динамика лептина"] = ((dataset["Лептин 1 час (нг/мл) 0 мес"] - dataset["Лептин (нг/мл) 0 мес"]) / dataset["Лептин (нг/мл) 0 мес"])*100
 
-        self.dataset = dataset
-        
+        # выбросы
+        dataset = dataset.drop(dataset[ (dataset["% потери веса 3 мес"] > 15)].index)
+        dataset = dataset.drop(dataset[ (dataset["% потери веса 6 мес"] > 15)].index)
+        dataset.loc[ (dataset["% потери веса 3 мес"] > 5) & (dataset["Возраст"] > 50), "% потери веса 3 мес"] = 4
+
+        if medicine is not None:
+            dataset = dataset.loc[dataset["Лечение"]==medicine, :]
+
+        self.dataset = dataset.drop("Лечение", axis=1)
+    
     
     def get_X_y(self, medicine, treshold=5, params=None, target_type="A"):
         dataset = self.dataset.copy()
+
+    def get_X_y(self, medicine, treshold=5, params=None, target_type="A"):
+        dataset = self.dataset.copy()
+        
         
         dataset = dataset[dataset["Лечение"] == medicine].drop("Лечение", axis=1)
-        
+
+        dataset = dataset[dataset["Лечение"] == medicine].drop("Лечение", axis=1)
+    
+    def get_X_y(self, medicine="SIB", treshold=5, params=None, target_type="A"):
+        dataset = self.dataset.copy()
         X = dataset
 
         if (target_type=="A"):
@@ -132,43 +145,42 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     return f"{snapshot_folder}/{experiment_name}"
 
 
+if __name__=="__main__":
+    dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(agroup_params_only=False)
 
-dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(agroup_params_only=False)
+    # 3 months
+    params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "OXC"]
+    X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
+    model = XGBClassifier()
+    model.fit(X, y)
+    experiment_name = "model_agroup_3month"
+    exp_name = save_experiment(model, X, y, experiment_name)
+    print(f"Model saved: {exp_name}")
 
+    # 6 months
+    params = ["Возраст", "ИМТ 3 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
+    X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
+    model = XGBClassifier()
+    model.fit(X, y)
+    experiment_name = "model_agroup_6month"
+    exp_name = save_experiment(model, X, y, experiment_name)
+    print(f"Model saved: {exp_name}")
 
-# 3 months
-params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC"]
-X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
-model = XGBClassifier()
-model.fit(X, y)
-experiment_name = "model_agroup_3month"
-exp_name = save_experiment(model, X, y, experiment_name)
-print(f"Model saved: {exp_name}")
+    # 3 months
 
-# 6 months
-params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
-X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
-model = XGBClassifier()
-model.fit(X, y)
-experiment_name = "model_agroup_6month"
-exp_name = save_experiment(model, X, y, experiment_name)
-print(f"Model saved: {exp_name}")
+    params = ["Возраст", "ИМТ 0 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "OXC", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'Проколлаген 1 типа нг/мл (183-244) 0 мес', 'Проколлаген 3 типа пг/мл (11178-36957) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
+    X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
+    model = XGBClassifier()
+    model.fit(X, y)
+    experiment_name = "model_bgroup_3month"
+    exp_name = save_experiment(model, X, y, experiment_name)
+    print(f"Model saved: {exp_name}")
+    # 6 months
 
-# 3 months
-
-params = ["Возраст", "ИМТ 0 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "OXC", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'Проколлаген 1 типа нг/мл (183-244) 0 мес', 'Проколлаген 3 типа пг/мл (11178-36957) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
-X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
-model = XGBClassifier()
-model.fit(X, y)
-experiment_name = "model_bgroup_3month"
-exp_name = save_experiment(model, X, y, experiment_name)
-print(f"Model saved: {exp_name}")
-# 6 months
-
-params = ["Возраст", "ИМТ 3 мес", "СРБ", "Лептинрезистентность", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес']
-X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
-model = XGBClassifier()
-model.fit(X, y)
-experiment_name = "model_bgroup_6month"
-exp_name = save_experiment(model, X, y, experiment_name)
-print(f"Model saved: {exp_name}")
+    params = ["Возраст", "ИМТ 3 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес']
+    X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
+    model = XGBClassifier()
+    model.fit(X, y)
+    experiment_name = "model_bgroup_6month"
+    exp_name = save_experiment(model, X, y, experiment_name)
+    print(f"Model saved: {exp_name}")
