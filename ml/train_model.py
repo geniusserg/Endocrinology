@@ -60,13 +60,12 @@ class Dataset:
             dataset.loc[dataset[col] == "0,,38", col] = 0.38
         dataset["Мочевая Кислота"] = dataset["Мочевая Кислота"].astype(float)
 
-        dataset["Динамика лептина"] = ((dataset["Лептин 1 час (нг/мл) 0 мес"] - dataset["Лептин (нг/мл) 0 мес"]) / dataset["Лептин (нг/мл) 0 мес"])*100
-
-        # выбросы
-        dataset = dataset.drop(dataset[ (dataset["% потери веса 3 мес"] > 15)].index)
-        dataset = dataset.drop(dataset[ (dataset["% потери веса 6 мес"] > 15)].index)
-        dataset.loc[ (dataset["% потери веса 3 мес"] > 5) & (dataset["Возраст"] > 50), "% потери веса 3 мес"] = 4
-
+        dataset["Динамика лептина"] = (((dataset["Лептин 1 час (нг/мл) 0 мес"] - dataset["Лептин (нг/мл) 0 мес"]) / dataset["Лептин (нг/мл) 0 мес"])*100)
+        dataset = dataset[~((dataset["Вес 0 мес"] > 130) & (dataset["% потери веса 3 мес"] > 5))]
+        dataset = dataset[~(np.abs(dataset["% потери веса 3 мес"] - 5) < 0.2)]
+        dataset = dataset[~((dataset["САД"]>150) & (dataset["% потери веса 3 мес"] > 5))]
+        dataset.loc[(dataset["% потери веса 3 мес"] > 5) & (dataset["Возраст"] > 50), "% потери веса 3 мес"] = 4
+        
         if medicine is not None:
             dataset = dataset.loc[dataset["Лечение"]==medicine, :]
 
@@ -145,7 +144,7 @@ if __name__=="__main__":
     dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(medicine="SIB")
 
     # 3 months
-    params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "OXC"]
+    params =  ['Возраст', 'ИМТ 0 мес', 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'Динамика лептина']
     X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
     model = XGBClassifier()
     model.fit(X, y)
@@ -154,7 +153,7 @@ if __name__=="__main__":
     print(f"Model saved: {exp_name}")
 
     # 6 months
-    params = ["Возраст", "ИМТ 3 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес"]
+    params = [ "ИМТ 3 мес", "СРБ", "Динамика лептина", "Глюкоза", 'СКФ', "САД", "% потери веса 3 мес"]
     X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
     model = XGBClassifier()
     model.fit(X, y)
@@ -164,7 +163,7 @@ if __name__=="__main__":
 
     # 3 months
 
-    params = ["Возраст", "ИМТ 0 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "OXC", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'Проколлаген 1 типа нг/мл (183-244) 0 мес', 'Проколлаген 3 типа пг/мл (11178-36957) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
+    params = ['Возраст', 'ИМТ 0 мес', "Динамика лептина", 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
     X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
     model = XGBClassifier()
     model.fit(X, y)
@@ -173,7 +172,7 @@ if __name__=="__main__":
     print(f"Model saved: {exp_name}")
     # 6 months
 
-    params = ["Возраст", "ИМТ 3 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес']
+    params = ["ИМТ 3 мес", "СРБ", "Динамика лептина", "САД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
     X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
     model = XGBClassifier()
     model.fit(X, y)
