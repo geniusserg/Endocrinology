@@ -18,7 +18,7 @@ class Dataset:
             self.config = json.load(f)
         
 
-    def preprocess(self, medicine="SIB", agroup_params_only=True):
+    def preprocess(self, medicine="SIB"):
         dataset = self.dataset.copy()
         parameters_truncated = self.config["parameters_truncated"]
         columns_list = self.config["all_parameters"]
@@ -35,9 +35,6 @@ class Dataset:
         dataset.columns = list(
                         map(lambda i: parameters_truncated[i] if i in parameters_truncated else i, dataset.columns))
 
-        if (agroup_params_only):
-            agroup_params = self.config["model_parameters"]
-            dataset = dataset[agroup_params]
             
         dataset["% потери веса 3 мес"] = ((dataset["Вес 0 мес"] - dataset["Вес 3 мес"]) / dataset["Вес 0 мес"]) * 100
         dataset["% потери веса 6 мес"] = ((dataset["Вес 0 мес"] - dataset["Вес 6 мес"]) / dataset["Вес 0 мес"]) * 100
@@ -144,9 +141,8 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     shutil.copytree(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime), os.path.join("..", snapshot_folder, experiment_name), dirs_exist_ok=True)
     return f"{snapshot_folder}/{experiment_name}"
 
-
 if __name__=="__main__":
-    dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(agroup_params_only=False)
+    dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(medicine="SIB")
 
     # 3 months
     params =  ["Возраст", "ИМТ 0 мес", "СРБ", "Постпрандиальная динамика лептина", "Глюкоза", 'СКФ', "ДАД", "OXC"]
