@@ -73,7 +73,7 @@ def render_welcome_page(image_path=False):
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     checked = "checked" if config["extra"] == True else ""
-    return render_template('index_eng.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
 
 @app.route('/', methods=['GET'])
 def index():
