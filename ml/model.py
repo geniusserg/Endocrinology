@@ -8,15 +8,20 @@ from matplotlib import rcParams, pyplot as plt
 rcParams.update({'figure.autolayout': True})
 
 class Model():
-    def __init__(self, model_path, explainer_path):
+    def __init__(self, model_path, explainer_path, feature_aliases=None):
         with open(model_path, "rb") as f:
             self.model = pickle.load(f)
         with open(explainer_path, "rb") as f:
             self.explainer = pickle.load(f)
         self.dataset_shap_values = self.explainer(self.explainer.X)
+        with open("a.txt", "w") as f:
+            f.write(str(self.explainer.output_names))
 
-    def get_features(self):
-        return list(map(str, self.model.feature_names_in_))
+    def get_features(self, translate_dict=None):
+        feature_names = list(map(str, self.model.feature_names_in_))
+        # if translate_dict id not None:
+        #     feature_names = [translate_dict[f] if f in translate_dict else f for feature_names]
+        return feature_names
 
     def predict(self, data_input):
         data = {k:data_input[k] for k in self.model.feature_names_in_}
@@ -32,6 +37,7 @@ class Model():
         shap_values = self.explainer(data)
         plt.ioff(); fig = plt.figure()
         shap.plots.waterfall(shap_values[0, :], show=False)
+
         plt.savefig(os.path.join("static", "explain.jpg")); plt.close(fig)
         return "explain.jpg"
 

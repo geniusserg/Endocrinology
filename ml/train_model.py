@@ -18,7 +18,7 @@ class Dataset:
             self.config = json.load(f)
         
 
-    def preprocess(self, medicine="SIB"):
+    def preprocess(self, medicine="SIB", translation_config=None):
         dataset = self.dataset.copy()
         parameters_truncated = self.config["parameters_truncated"]
         columns_list = self.config["all_parameters"]
@@ -71,19 +71,12 @@ class Dataset:
 
         self.dataset = dataset.drop("Лечение", axis=1)
     
+        if translation_config is not None:
+            self.dataset = self.dataset.rename(columns=translation_config)
     
-    def get_X_y(self, medicine, treshold=5, params=None, target_type="A"):
-        dataset = self.dataset.copy()
+        print(self.dataset.columns)
 
-    def get_X_y(self, medicine, treshold=5, params=None, target_type="A"):
-        dataset = self.dataset.copy()
-        
-        
-        dataset = dataset[dataset["Лечение"] == medicine].drop("Лечение", axis=1)
-
-        dataset = dataset[dataset["Лечение"] == medicine].drop("Лечение", axis=1)
-    
-    def get_X_y(self, medicine="SIB", treshold=5, params=None, target_type="A"):
+    def get_X_y(self, treshold=5, params=None, target_type="A"):
         dataset = self.dataset.copy()
         X = dataset
 
@@ -140,42 +133,38 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     shutil.copytree(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime), os.path.join("..", snapshot_folder, experiment_name), dirs_exist_ok=True)
     return f"{snapshot_folder}/{experiment_name}"
 
+def reply_experiment(model, dataset, params, treshold, target, experiment_name="default", translation_config=None):
+    X, y = dt.get_X_y(treshold, params=params, target_type=target)
+    model.fit(X, y)
+    exp_name = save_experiment(model, X, y, experiment_name)
+    print(f"Model saved: {exp_name}")
+
+translation_config = {
+    "Возраст": "Age",
+    "ИМТ 0 мес" : "BMI",
+    "СРБ": "C-Reactive Protein",
+    "Глюкоза": "Glucose",
+    "СКФ": "Glomerular Filtration Rate",
+    'OXC': "Total Cholesterol",
+    'САД': "Systolic Blood Pressure",
+    'Динамика лептина': "Postprandial Dynamics of Leptin %" 
+}
+
 if __name__=="__main__":
-    dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(medicine="SIB")
+    dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(medicine="SIB", translation_config=translation_config)
 
     # 3 months
-    params =  ['Возраст', 'ИМТ 0 мес', 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'Динамика лептина']
-    X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
-    model = XGBClassifier()
-    model.fit(X, y)
-    experiment_name = "model_agroup_3month"
-    exp_name = save_experiment(model, X, y, experiment_name)
-    print(f"Model saved: {exp_name}")
+    params =  list(translation_config.values())
+    reply_experiment(XGBClassifier(), dt, params, 5, "A", "model_agroup_3month")
 
-    # 6 months
-    params = [ "ИМТ 3 мес", "СРБ", "Динамика лептина", "Глюкоза", 'СКФ', "САД", "% потери веса 3 мес"]
-    X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
-    model = XGBClassifier()
-    model.fit(X, y)
-    experiment_name = "model_agroup_6month"
-    exp_name = save_experiment(model, X, y, experiment_name)
-    print(f"Model saved: {exp_name}")
+    # # 6 months
+    # params = [ "ИМТ 3 мес", "СРБ", "Динамика лептина", "Глюкоза", 'СКФ', "САД", "% потери веса 3 мес"]
+    # reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_agroup_6month")
 
-    # 3 months
+    # # 3 months
+    # params = ['Возраст', 'ИМТ 0 мес', "Динамика лептина", 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
+    # reply_experiment(XGBClassifier(), dt, params, 5, "A", "model_bgroup_3month")
 
-    params = ['Возраст', 'ИМТ 0 мес', "Динамика лептина", 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
-    X, y = dt.get_X_y("SIB", 5, params=params, target_type="A")
-    model = XGBClassifier()
-    model.fit(X, y)
-    experiment_name = "model_bgroup_3month"
-    exp_name = save_experiment(model, X, y, experiment_name)
-    print(f"Model saved: {exp_name}")
-    # 6 months
-
-    params = ["ИМТ 3 мес", "СРБ", "Динамика лептина", "САД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
-    X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
-    model = XGBClassifier()
-    model.fit(X, y)
-    experiment_name = "model_bgroup_6month"
-    exp_name = save_experiment(model, X, y, experiment_name)
-    print(f"Model saved: {exp_name}")
+    # # 6 months
+    # params = ["ИМТ 3 мес", "СРБ", "Динамика лептина", "САД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
+    # reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_bgroup_6month")

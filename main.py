@@ -69,11 +69,11 @@ def render_welcome_page(image_path=False):
     data = config["sample_data"] if config["last_data"] is None else config["last_data"]
     data = {i: data[i] if i in data else '' for i in config["features"]}
     descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
-    fields = [{"name": i, "description": descriptions[i], "placeholder": "Введите значение", "value": data[i]} for i in config["features"]]
+    fields = [{"name": i, "description": descriptions[i], "placeholder": "Input value...", "value": data[i]} for i in config["features"]]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     checked = "checked" if config["extra"] == True else ""
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
+    return render_template('index_eng.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
 
 @app.route('/', methods=['GET'])
 def index():
