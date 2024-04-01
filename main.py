@@ -69,7 +69,7 @@ def render_welcome_page(image_path=False):
     data = config["sample_data"] if config["last_data"] is None else config["last_data"]
     data = {i: data[i] if i in data else '' for i in config["features"]}
     descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
-    fields = [{"name": i, "description": descriptions[i], "placeholder": "Введите значение", "value": data[i]} for i in config["features"]]
+    fields = [{"name": i, "description": descriptions[i], "value": data[i]} for i in config["features"]]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     checked = "checked" if config["extra"] == True else ""
