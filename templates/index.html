@@ -31,7 +31,7 @@
             {% for field in fields %}
             <div id="paramform">
                 <label for="{{ field.name }}">{{ field.description }}</label>
-                <input type="text" name="{{ field.name }}" placeholder="{{ field.placeholder }}" value="{{ field.value }}">
+                <input type="text" name="{{ field.name }}" placeholder="Введите значение..." value="{{ field.value }}">
             </div>
             {% endfor %}
             <button type="submit">Сделать прогноз</button>
