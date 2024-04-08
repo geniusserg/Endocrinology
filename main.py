@@ -21,7 +21,7 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     global config, model
     config = json.load(open(config_json_path, "r", encoding="utf-8"))
 
-    for model_configuration in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]:
+    for model_configuration in ["model_agroup_3month"]:
         classifier_path = os.path.join(model_snapshots_dir, model_configuration, "model.pkl")
         explainer_path = os.path.join(model_snapshots_dir, model_configuration, "explainer.pkl")
         config[model_configuration] = Model(model_path = classifier_path, explainer_path = explainer_path)
@@ -73,7 +73,7 @@ def render_welcome_page(image_path=False):
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     checked = "checked" if config["extra"] == True else ""
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
+    return render_template('index_eng.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
 
 @app.route('/', methods=['GET'])
 def index():
