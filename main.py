@@ -30,9 +30,6 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     config["extra"] = False
     model = config["model_agroup_3month"]
 
-def get_partial(feature_a, feature_b=None):
-    return model.partial_explain(feature_a, feature_b)
-
 def transform_input_data(input_data):
     if (("Лептин" in input_data) and (input_data["Лептин"] is not None) and (input_data["Лептин"] != 0)):
         if (("Лептин 1 час" in input_data) and (input_data["Лептин 1 час"] is not None) and (input_data["Лептин 1 час"] != 0)):
@@ -49,9 +46,10 @@ def transform_input_data(input_data):
 ######
 
 # Render application 
-def render_welcome_page():
+def render_welcome_page(partial_plot_ready=False):
     mode = config["mode"]
     features = config["features"][mode]
+    print(mode, features)
     data = {i: None for i in features}
     if (config["last_data"] is not None): # load saved data or from deafult values from config
         data = {i: config["last_data"][i] if i in config["last_data"] else None for i in features}
@@ -62,7 +60,7 @@ def render_welcome_page():
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     config["mode_month"] = "model_3month" if mode.find("3month") != -1 else "model_6month"
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode_selected=mode, mode=config["mode_month"])
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode_selected=mode, mode=config["mode_month"], partial_plot_ready=partial_plot_ready)
 
 @app.route('/')
 @app.route('/?mode=<mode>')
@@ -98,13 +96,13 @@ def predict():
 # Partial explain model
 @app.route('/explain', endpoint="explain", methods=['POST'])
 def explain():
+    global model
     data = request.form
     feature_a = data.get("feature1", None)
     feature_b = data.get("feature2", None)
     if (feature_a in config["features"]):
-        get_partial(feature_a, feature_b if feature_b in config["features"] else None)
-    data = config["sample_data"] if config["last_data"] is None else config["last_data"]
-    return render_welcome_page(image_path=True)
+        model.partial_explain(feature_a, feature_b)
+    return render_welcome_page(partial_plot_ready=True)
 
 
 if __name__ == '__main__':

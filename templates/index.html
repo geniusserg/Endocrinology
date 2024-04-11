@@ -78,7 +78,7 @@
             </form>
  
             <div id="partial_box">
-                {% if image_path %}
+                {% if partial_plot_ready %}
                     <img src="{{ url_for('static', filename='partial_explain.jpg') }}"  alt="Partial Dependence Plot">
                 {% else %}
                     <p style="font-size: 5;"> Параметры не выбраны </p>
