@@ -13,10 +13,10 @@
     </div> 
 
     <ul>
-        <li><a href="/?mode=model_agroup_3month"  {% if mode=="model_agroup_3month" %} class="selected" {% endif %}>Первый визит</a></li>
-        <li><a href="/?mode=model_bgroup_3month"  {% if mode=="model_bgroup_3month" %} class="selected" {% endif %}>Первый визит (с гормонами)</a></li>
-        <li><a href="/?mode=model_agroup_6month"  {% if mode=="model_agroup_6month" %} class="selected" {% endif %}>Визит через 3 месяца</a></li>
-        <li><a href="/?mode=model_bgroup_6month"  {% if mode=="model_bgroup_6month" %} class="selected" {% endif %}>Визит через 3 месяца (с гормонами)</a></li>
+        <li><a href="/?mode=model_agroup_3month"  {% if mode_selected=="model_agroup_3month" %} class="selected" {% endif %}>Первый визит</a></li>
+        <li><a href="/?mode=model_bgroup_3month"  {% if mode_selected=="model_bgroup_3month" %} class="selected" {% endif %}>Первый визит (с гормонами)</a></li>
+        <li><a href="/?mode=model_agroup_6month"  {% if mode_selected=="model_agroup_6month" %} class="selected" {% endif %}>Визит через 3 месяца</a></li>
+        <li><a href="/?mode=model_bgroup_6month"  {% if mode_selected=="model_bgroup_6month" %} class="selected" {% endif %}>Визит через 3 месяца (с гормонами)</a></li>
     </ul>
 
     <div class="container">
@@ -87,26 +87,12 @@
         </div>
 
     <div id="overall_explanation">
-        <h3>SHAP график обьяснения модели для Сибутрамина {% if mode=='model_3month' %} для первого визита {% else %} для визита после 3 месяцев лечения {% endif %}</h3>
+        <h3>SHAP график обьяснения модели для Сибутрамина {% if (mode=='model_3month') or (mode=='model_3month') %} для первого визита {% else %} для визита после 3 месяцев лечения {% endif %}</h3>
         <div class="box">
             <img src="{{ url_for('static', filename='overall_explain.jpg') }}" alt="Partial Dependence Plot">
         </div>
     </div>
     </div>
-    <script>
-        function toggleVisibility(mode) {
-            list_of_related_params = ['ИМТ 3 мес']
-            for (let i = 0; i < list_of_related_params.length; i++){
-                var inputField = document.getElementById(list_of_related_params[i]);
-                if (mode === '3') {
-                    inputField.style.display = 'none';
-                } 
-                if (mode === '6') {
-                    inputField.style.display = 'block';
-                }
-            }
-        }
-    </script>
     </div>
 </body>
 </html>

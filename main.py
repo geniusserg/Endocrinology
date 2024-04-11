@@ -49,7 +49,8 @@ def transform_input_data(input_data):
 ######
 
 # Render application 
-def render_welcome_page(mode):
+def render_welcome_page():
+    mode = config["mode"]
     features = config["features"][mode]
     data = {i: None for i in features}
     if (config["last_data"] is not None): # load saved data or from deafult values from config
@@ -60,16 +61,18 @@ def render_welcome_page(mode):
     fields = [{"name": i, "description": i, "value": data[i]} for i in data]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode=mode)
+    config["mode_month"] = "model_3month" if mode.find("3month") != -1 else "model_6month"
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode_selected=mode, mode=config["mode_month"])
 
 @app.route('/')
 @app.route('/?mode=<mode>')
 def index():
-    global model
+    global model, config
     mode = request.args.get('mode', "model_agroup_3month")
     if (mode in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]):
         model = config[mode]
-    return render_welcome_page(mode)
+    config["mode"] = mode
+    return render_welcome_page()
 
 # Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
@@ -85,21 +88,7 @@ def predict():
         else:
             input_data[p] = None
     input_data = transform_input_data(input_data)
-
-    config["extra"] = False
-    for param in config["extra_features"]:
-        if param in input_data:
-            config["extra"] = True
-    
-    if ('% потери веса 3 мес' in input_data):
-        config["mode"] = "model_6month"
-    else:
-        config["mode"] = "model_3month"
-
     input_data = {i: input_data[i] for i in model.get_features()}
-
-    print(config["mode"], config["extra"], input_data)
-
     result, confidence = model.predict(input_data)
     model.explain(input_data)
     config["last_data"] = {i: data.get(i, '')  for i in config["features"]}
