@@ -32,9 +32,10 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     model = config["model_agroup_3month"]
 
 def transform_input_data(input_data):
-    if (("Лептин" in input_data) and (input_data["Лептин"] is not None) and (input_data["Лептин"] != 0)):
-        if (("Лептин 1 час" in input_data) and (input_data["Лептин 1 час"] is not None) and (input_data["Лептин 1 час"] != 0)):
-            input_data["Постпрандиальная динамика лептина"] = ((input_data["Лептин 1 час"] - input_data["Лептин"])/ input_data["Лептин"])*100
+    leptin, leptin_hour =  "Лептин (до еды)", "Лептин (через 1 час после еды)",
+    if ((leptin in input_data) and (input_data[leptin] is not None) and (input_data[leptin] != 0)):
+        if ((leptin_hour in input_data) and (input_data[leptin_hour] is not None) and (input_data[leptin_hour] != 0)):
+            input_data["Постпрандиальная динамика лептина"] = ((input_data[leptin_hour] - input_data[leptin])/ input_data[leptin])*100
     if (("ИМТ 3 мес" in input_data) and (input_data["ИМТ 3 мес"] is not None) and (input_data["ИМТ 3 мес"] != 0)):
         if (("ИМТ 0 мес" in input_data) and (input_data["ИМТ 0 мес"] is not None) and (input_data["ИМТ 0 мес"] != 0)):
             input_data["% потери веса 3 мес"] = ((input_data["ИМТ 0 мес"] - input_data["ИМТ 3 мес"])/(input_data["ИМТ 0 мес"]))*100
