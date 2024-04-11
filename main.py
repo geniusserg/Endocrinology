@@ -50,13 +50,12 @@ def transform_input_data(input_data):
 def render_welcome_page(partial_plot_ready=False):
     mode = config["mode"]
     features = config["features"][mode]
-    print(mode, features)
+
     data = {i: None for i in features}
     if (config["last_data"] is not None): # load saved data or from deafult values from config
         data = {i: config["last_data"][i] if i in config["last_data"] else None for i in features}
     else:
         data = {i: config["sample_data"][i] if i in config["sample_data"] else None for i in features}
-    # descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
     fields = [{"name": i, "description": i, "value": data[i]} for i in data]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
@@ -73,12 +72,16 @@ def index():
     if (mode in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]):
         model = config[mode]
     config["mode"] = mode
+    config["last_data"] = None
+    config["last_shap_plot"] = None
+    config["last_result"] = (None, None)
     model.overall_shap_plot()
     return render_welcome_page()
 
 # Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
 def predict():
+    global model
     data = request.form
     input_data = {}
     for p in data:
@@ -90,10 +93,10 @@ def predict():
         else:
             input_data[p] = None
     input_data = transform_input_data(input_data)
-    input_data = {i: input_data[i] for i in model.get_features()}
+    input_data = {i: input_data[i] if i in input_data else None for i in model.get_features()}
     result, confidence = model.predict(input_data)
     model.explain(input_data)
-    config["last_data"] = {i: data.get(i, '')  for i in config["features"]}
+    config["last_data"] = {i: data.get(i, '')  for i in config["features"][config["mode"]]}
     config["last_result"] = (result, round(confidence*100, 2))
     return render_welcome_page()
 
