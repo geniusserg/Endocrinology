@@ -14,17 +14,20 @@
     <div class="container">
     <div class="form">
         <form action="/predict" method="POST">
-            <label><input type="radio" name="mode" value="first_visit" onclick="showParameters('first_visit')"> First Visit</label><br>
-            <label><input type="radio" name="mode" value="visit_after_3_months" onclick="showParameters('visit_after_3_months')"> Visit after 3 Months</label><br>
+            <label><input type="radio" name="mode" value="first_visit" checked onclick="toggleVisibility('3')" > First Visit</label><br>
+            <label><input type="radio" name="mode" value="visit_after_3_months" onclick="toggleVisibility('6')"> Visit after 3 Months</label><br>
             {% for field in fields %}
             <div id="paramform">
-                <label for="{{ field.name }}">{{ field.description }}</label>
-                <input type="text" name="{{ field.name }}" placeholder="Введите значение..." value="{{ field.value }}">
+                <div id="{{ field.name }}" class="{{ hidden }}">
+                    <label for="{{ field.name }}">{{ field.description }}</label>
+                    <input type="text" name="{{ field.name }}" placeholder="Введите значение..." value="{{ field.value }}">
+                </div>
             </div>
             {% endfor %}
             <button type="submit">Сделать прогноз</button>
         </form>    
     </div>
+
 
     <div class="info">
         {% if result==0 or result==1 %} 
@@ -84,6 +87,20 @@
         </div>
     </div>
     </div>
+    <script>
+        function toggleVisibility(mode) {
+            list_of_related_params = ['ИМТ 3 мес']
+            for (let i = 0; i < list_of_related_params.length; i++){
+                var inputField = document.getElementById(list_of_related_params[i]);
+                if (mode === '3') {
+                    inputField.style.display = 'none';
+                } 
+                if (mode === '6') {
+                    inputField.style.display = 'block';
+                }
+            }
+        }
+    </script>
     </div>
 </body>
 </html>

@@ -153,7 +153,7 @@ if __name__=="__main__":
     print(f"Model saved: {exp_name}")
 
     # 6 months
-    params = [ "ИМТ 3 мес", "СРБ", "Глюкоза", 'СКФ', "САД", "Постпрандиальная динамика лептина", "% потери веса 3 мес"]
+    params = ['Возраст', "ИМТ 3 мес", "СРБ", "Глюкоза", 'СКФ', "САД", "Постпрандиальная динамика лептина", "% потери веса 3 мес"]
     X, y = dt.get_X_y("SIB", 7, params=params, target_type="both")
     model = XGBClassifier()
     model.fit(X, y)

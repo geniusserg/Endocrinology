@@ -1,3 +1,8 @@
+.hidden {
+    display: none
+}
+
+
 .container {
     display: flex;
 }

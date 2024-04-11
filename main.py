@@ -30,22 +30,15 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     config["extra"] = False
     model = config["model_agroup_3month"]
 
-
-def run_model(input_data):
-    return model.predict(input_data)
-
-def get_explanation(input_data):
-    return model.explain(input_data)
-
 def get_partial(feature_a, feature_b=None):
     return model.partial_explain(feature_a, feature_b)
 
 def transform_input_data(input_data):
-    if (("Лептин" in input_data) and (input_data["Лептин"] is not None)):
-        if (("Лептин 1 час" in input_data) and (input_data["Лептин 1 час"] is not None)):
+    if (("Лептин" in input_data) and (input_data["Лептин"] is not None) and (input_data["Лептин"] != 0)):
+        if (("Лептин 1 час" in input_data) and (input_data["Лептин 1 час"] is not None) and (input_data["Лептин 1 час"] != 0)):
             input_data["Постпрандиальная динамика лептина"] = ((input_data["Лептин 1 час"] - input_data["Лептин"])/ input_data["Лептин"])*100
-    if (("ИМТ 3 мес" in input_data) and (input_data["ИМТ 3 мес"] is not None)):
-        if (("ИМТ 0 мес" in input_data) and (input_data["ИМТ 0 мес"] is not None)):
+    if (("ИМТ 3 мес" in input_data) and (input_data["ИМТ 3 мес"] is not None) and (input_data["ИМТ 3 мес"] != 0)):
+        if (("ИМТ 0 мес" in input_data) and (input_data["ИМТ 0 мес"] is not None) and (input_data["ИМТ 0 мес"] != 0)):
             input_data["% потери веса 3 мес"] = ((input_data["ИМТ 0 мес"] - input_data["ИМТ 3 мес"])/(input_data["ИМТ 0 мес"]))*100
             input_data["% потери веса 3 мес"] = round(input_data["% потери веса 3 мес"], 2)
     return input_data
@@ -66,7 +59,7 @@ def render_welcome_page():
     fields = [{"name": i, "description": i, "value": data[i]} for i in data]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = list(data.keys()), mode = config["mode"])
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode = config["mode"])
 
 @app.route('/', methods=['GET'])
 def index():
@@ -86,9 +79,32 @@ def predict():
         else:
             input_data[p] = None
     input_data = transform_input_data(input_data)
+
+    config["extra"] = False
+    for param in config["extra_features"]:
+        if param in input_data:
+            config["extra"] = True
+    
+    if ('% потери веса 3 мес' in input_data):
+        config["mode"] = "model_6month"
+    else:
+        config["mode"] = "model_3month"
+
+    if ((config["mode"] == "model_3month") and (config["extra"] == False)):
+        model = config["model_agroup_3month"]
+    if ((config["mode"] == "model_6month") and (config["extra"] == False)):
+        model = config["model_agroup_6month"]
+    if ((config["mode"] == "model_3month") and (config["extra"] == True)):
+        model = config["model_bgroup_3month"]
+    if ((config["mode"] == "model_6month") and (config["extra"] == True)):
+        model = config["model_bgroup_6month"]
+
     input_data = {i: input_data[i] for i in model.get_features()}
-    result, confidence = run_model(input_data)
-    get_explanation(input_data)
+
+    print(config["mode"], config["extra"], input_data)
+
+    result, confidence = model.predict(input_data)
+    model.explain(input_data)
     config["last_data"] = {i: data.get(i, '')  for i in config["features"]}
     config["last_result"] = (result, round(confidence*100, 2))
     return render_welcome_page()
