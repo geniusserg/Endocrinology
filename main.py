@@ -70,6 +70,7 @@ def index():
     if (mode in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]):
         model = config[mode]
     config["mode"] = mode
+    model.overall_shap_plot()
     return render_welcome_page()
 
 # Run model and expalin solution
@@ -100,8 +101,11 @@ def explain():
     data = request.form
     feature_a = data.get("feature1", None)
     feature_b = data.get("feature2", None)
-    if (feature_a in config["features"]):
+    if (feature_b == "-"):
+        model.partial_explain(feature_a)
+    else:
         model.partial_explain(feature_a, feature_b)
+    print(feature_a, feature_b)
     return render_welcome_page(partial_plot_ready=True)
 
 
