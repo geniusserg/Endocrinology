@@ -2,11 +2,8 @@
 ## Sergey Danilov
 from ml.model import Model
 import json
-from flask import Flask, render_template, request, send_from_directory, url_for
 import os 
-import shap 
-import pandas as pd
-import shutil
+from flask import Flask, render_template, request
 
 app = Flask(__name__,  template_folder='templates')
 
@@ -26,30 +23,13 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
         explainer_path = os.path.join(model_snapshots_dir, model_configuration, "explainer.pkl")
         config[model_configuration] = Model(model_path = classifier_path, explainer_path = explainer_path)
 
-    switch_mode("model_3month")
-
     config["last_data"] = None
     config["last_shap_plot"] = None
     config["last_result"] = (None, None)
+    config["mode"] = "model_3month"
+    config["extra"] = False
+    model = config["model_agroup_3month"]
 
-def switch_mode(mode, extra=False):
-    global model, config
-    config["mode"] = mode
-    config["extra"] = extra
-    print(mode, extra)
-    if ((config["mode"] == "model_3month") and (config["extra"] == False)):
-        model = config["model_agroup_3month"]
-    if ((config["mode"] == "model_6month") and (config["extra"] == False)):
-        model = config["model_agroup_6month"]
-    if ((config["mode"] == "model_3month") and (config["extra"] == True)):
-        model = config["model_bgroup_3month"]
-    if ((config["mode"] == "model_6month") and (config["extra"] == True)):
-        model = config["model_bgroup_6month"]
-    model.overall_shap_plot()
-    config["features"] = model.get_features()
-    config["last_data"] = None
-    config["last_shap_plot"] = None
-    config["last_result"] = (None, None)
 
 def run_model(input_data):
     return model.predict(input_data)
@@ -60,26 +40,36 @@ def get_explanation(input_data):
 def get_partial(feature_a, feature_b=None):
     return model.partial_explain(feature_a, feature_b)
 
+def transform_input_data(input_data):
+    if (("Лептин" in input_data) and (input_data["Лептин"] is not None)):
+        if (("Лептин 1 час" in input_data) and (input_data["Лептин 1 час"] is not None)):
+            input_data["Постпрандиальная динамика лептина"] = ((input_data["Лептин 1 час"] - input_data["Лептин"])/ input_data["Лептин"])*100
+    if (("ИМТ 3 мес" in input_data) and (input_data["ИМТ 3 мес"] is not None)):
+        if (("ИМТ 0 мес" in input_data) and (input_data["ИМТ 0 мес"] is not None)):
+            input_data["% потери веса 3 мес"] = ((input_data["ИМТ 0 мес"] - input_data["ИМТ 3 мес"])/(input_data["ИМТ 0 мес"]))*100
+            input_data["% потери веса 3 мес"] = round(input_data["% потери веса 3 мес"], 2)
+    return input_data
+
+
 ######
 # GUI 
 ######
 
 # Render application 
-def render_welcome_page(image_path=False):
-    data = config["sample_data"] if config["last_data"] is None else config["last_data"]
-    data = {i: data[i] if i in data else '' for i in config["features"]}
-    descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
-    fields = [{"name": i, "description": descriptions[i], "value": data[i]} for i in config["features"]]
+def render_welcome_page():
+    data = {i: None for i in config["features"]}
+    if (config["last_data"] is not None): # load saved data or from deafult values from config
+        data = {i: config["last_data"][i] if i in config["last_data"] else None for i in config["features"]}
+    else:
+        data = {i: config["sample_data"][i] if i in config["sample_data"] else None for i in config["features"]}
+    # descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
+    fields = [{"name": i, "description": i, "value": data[i]} for i in data]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
-    checked = "checked" if config["extra"] == True else ""
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = config["features"], mode = config["mode"], image_path=image_path, checked=checked)
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = list(data.keys()), mode = config["mode"])
 
 @app.route('/', methods=['GET'])
 def index():
-    if "mode" in request.args:
-        switch_mode(request.args["mode"], "extra" in request.args)
-    
     return render_welcome_page()
 
 # Run model and expalin solution
@@ -95,6 +85,8 @@ def predict():
                 input_data[p] = None
         else:
             input_data[p] = None
+    input_data = transform_input_data(input_data)
+    input_data = {i: input_data[i] for i in model.get_features()}
     result, confidence = run_model(input_data)
     get_explanation(input_data)
     config["last_data"] = {i: data.get(i, '')  for i in config["features"]}

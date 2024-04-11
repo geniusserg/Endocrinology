@@ -13,21 +13,9 @@
     </div> 
     <div class="container">
     <div class="form">
-        <form action="/" method="GET">
-            <div id = "buttons">
-                <p>Выберите режим работы: </p>    
-                <button style = {% if mode=='model_3month' %} "background-color: aqua; {% else %} "background-color: gray; {% endif %} width:100%;"  type="submit" name="mode" value="model_3month" >Первый визит пациента</button>
-                <button style = {% if mode=='model_6month' %} "background-color: aqua; {% else %} "background-color: gray; {% endif %} width:100%;" type="submit" name="mode" value="model_6month" > Визит  через  3 месяца</button>
-            </div>
-            <br>
-            <a> Использовать дополнительные параметры (гормоны, РНК и т.д.) </a>
-            <label class="custom-checkbox">
-                <input type="checkbox" name="extra" {{ checked }}>
-                <span class="checkmark">  </span>
-            </label>
-            <br>
-        </form>
         <form action="/predict" method="POST">
+            <label><input type="radio" name="mode" value="first_visit" onclick="showParameters('first_visit')"> First Visit</label><br>
+            <label><input type="radio" name="mode" value="visit_after_3_months" onclick="showParameters('visit_after_3_months')"> Visit after 3 Months</label><br>
             {% for field in fields %}
             <div id="paramform">
                 <label for="{{ field.name }}">{{ field.description }}</label>
