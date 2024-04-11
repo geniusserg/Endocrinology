@@ -59,17 +59,17 @@
             <form action="/explain" method="post">
                 <div id="buttons">
                     <label for="feature1">Выберите основной параметр:</label>
-
                     <select name="feature1" id="feature1">
                         {% for feature in features %}
-                            <option value="{{ feature }}">{{ feature }}</option>
+                            <option value="{{ feature }}" {% if partial_features[0]==feature %} selected {% endif %}>{{ feature }}</option>
                         {% endfor %}
                     </select>
+
                     <label for="feature2">Выберите дополнительный параметр:</label>
                     <select name="feature2" id="feature2">
                         <option hidden selected>-</option>
                         {% for feature in features %}
-                            <option value="{{ feature }}">{{ feature }}</option>
+                            <option value="{{ feature }}" {% if partial_features[1]==feature %} selected {% endif %}>{{ feature }}</option>
                         {% endfor %}
                     </select>
 
@@ -77,6 +77,8 @@
                 </div>
             </form>
  
+            </br>
+
             <div id="partial_box">
                 {% if partial_plot_ready %}
                     <img src="{{ url_for('static', filename='partial_explain.jpg') }}"  alt="Partial Dependence Plot">

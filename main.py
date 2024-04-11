@@ -26,6 +26,7 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     config["last_data"] = None
     config["last_shap_plot"] = None
     config["last_result"] = (None, None)
+    config["last_partial_features_selected"] = [None, None]
     config["mode"] = "model_3month"
     config["extra"] = False
     model = config["model_agroup_3month"]
@@ -60,7 +61,9 @@ def render_welcome_page(partial_plot_ready=False):
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
     config["mode_month"] = "model_3month" if mode.find("3month") != -1 else "model_6month"
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode_selected=mode, mode=config["mode_month"], partial_plot_ready=partial_plot_ready)
+    return render_template('index.html', fields = fields, result = result, confidence = confidence,
+        features = model.get_features(), mode_selected=mode, mode=config["mode_month"], 
+        partial_plot_ready=partial_plot_ready, partial_features = config["last_partial_features_selected"])
 
 @app.route('/')
 @app.route('/?mode=<mode>')
@@ -105,7 +108,7 @@ def explain():
         model.partial_explain(feature_a)
     else:
         model.partial_explain(feature_a, feature_b)
-    print(feature_a, feature_b)
+    config["last_partial_features_selected"] = [feature_a, feature_b]
     return render_welcome_page(partial_plot_ready=True)
 
 
