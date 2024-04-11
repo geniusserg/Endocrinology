@@ -21,7 +21,7 @@ def load_global_config(config_json_path = "config.json", model_snapshots_dir = "
     global config, model
     config = json.load(open(config_json_path, "r", encoding="utf-8"))
 
-    for model_configuration in ["model_agroup_3month"]:
+    for model_configuration in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]:
         classifier_path = os.path.join(model_snapshots_dir, model_configuration, "model.pkl")
         explainer_path = os.path.join(model_snapshots_dir, model_configuration, "explainer.pkl")
         config[model_configuration] = Model(model_path = classifier_path, explainer_path = explainer_path)

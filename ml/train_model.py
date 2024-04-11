@@ -73,15 +73,13 @@ class Dataset:
     
         if translation_config is not None:
             self.dataset = self.dataset.rename(columns=translation_config)
-    
-        print(self.dataset.columns)
 
     def get_X_y(self, treshold=5, params=None, target_type="A"):
         dataset = self.dataset.copy()
         X = dataset
-
+        
         if (target_type=="A"):
-            y_target = dataset["% потери веса 3 мес"]
+            y_target = dataset["Weight loss after 3 months"]
         elif (target_type=="B"):
             y_target = dataset["% потери веса 6 мес"]
         elif (target_type=="C"):
@@ -133,8 +131,8 @@ def save_experiment(model, X, y, experiment_name, snapshot_folder = "model_snaps
     shutil.copytree(os.path.join("..", snapshot_folder, experiment_name, formatted_datetime), os.path.join("..", snapshot_folder, experiment_name), dirs_exist_ok=True)
     return f"{snapshot_folder}/{experiment_name}"
 
-def reply_experiment(model, dataset, params, treshold, target, experiment_name="default", translation_config=None):
-    X, y = dt.get_X_y(treshold, params=params, target_type=target)
+def reply_experiment(model, dataset, params, treshold, target, experiment_name="default"):
+    X, y = dataset.get_X_y(treshold, params=params, target_type=target)
     model.fit(X, y)
     exp_name = save_experiment(model, X, y, experiment_name)
     print(f"Model saved: {exp_name}")
@@ -142,29 +140,36 @@ def reply_experiment(model, dataset, params, treshold, target, experiment_name="
 translation_config = {
     "Возраст": "Age",
     "ИМТ 0 мес" : "BMI",
+    "ИМТ 3 мес" : "BMI after 3 months",
     "СРБ": "C-Reactive Protein",
     "Глюкоза": "Glucose",
     "СКФ": "Glomerular Filtration Rate",
     'OXC': "Total Cholesterol",
     'САД': "Systolic Blood Pressure",
-    'Динамика лептина': "Postprandial Dynamics of Leptin %" 
+    'Динамика лептина': "Postprandial Dynamics of Leptin %",
+    '% потери веса 3 мес': "Weight loss after 3 months",
+    'ГПП 1 нг/мл 0 мес': 'GLP-1',
+    'ГИП (пг/мл) 0 мес': 'GIP',
+    'Грелин (нг/мл) 0 мес': 'Ghrelin',
+    'miR142 (ПЛАЗМА) 0 мес': 'miR142 (Plasma)', 
+    'sST2 нг/мл (15,15-26,86) 0 мес': 'sST2'
 }
 
 if __name__=="__main__":
     dt = Dataset(dataset_path=os.path.join("..", "data", "dataset.xlsx")); dt.preprocess(medicine="SIB", translation_config=translation_config)
 
     # 3 months
-    params =  list(translation_config.values())
+    params = [translation_config[i] for i in ["Возраст", "ИМТ 0 мес", "СРБ", "Глюкоза", "СКФ", 'OXC', 'САД', 'Динамика лептина']]
     reply_experiment(XGBClassifier(), dt, params, 5, "A", "model_agroup_3month")
 
-    # # 6 months
-    # params = [ "ИМТ 3 мес", "СРБ", "Динамика лептина", "Глюкоза", 'СКФ', "САД", "% потери веса 3 мес"]
-    # reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_agroup_6month")
+    # 6 months
+    params =  [translation_config[i] for i in [ "ИМТ 3 мес", "СРБ", "Динамика лептина", "Глюкоза", 'СКФ', "САД", "% потери веса 3 мес"]]
+    reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_agroup_6month")
 
-    # # 3 months
-    # params = ['Возраст', 'ИМТ 0 мес', "Динамика лептина", 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
-    # reply_experiment(XGBClassifier(), dt, params, 5, "A", "model_bgroup_3month")
+    # 3 months
+    params = [ translation_config[i] for i in ['Возраст', 'ИМТ 0 мес', "Динамика лептина", 'СРБ', 'Глюкоза', 'СКФ', 'OXC', 'САД', 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']]
+    reply_experiment(XGBClassifier(), dt, params, 5, "A", "model_bgroup_3month")
 
-    # # 6 months
-    # params = ["ИМТ 3 мес", "СРБ", "Динамика лептина", "САД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']
-    # reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_bgroup_6month")
+    # 6 months
+    params =  [ translation_config[i] for i in ["ИМТ 3 мес", "СРБ", "Динамика лептина", "САД", "% потери веса 3 мес", 'ГПП 1 нг/мл 0 мес', 'ГИП (пг/мл) 0 мес', 'Грелин (нг/мл) 0 мес', 'miR142 (ПЛАЗМА) 0 мес', 'sST2 нг/мл (15,15-26,86) 0 мес']]
+    reply_experiment(XGBClassifier(), dt, params, 7, "both", "model_bgroup_6month")
