@@ -49,21 +49,27 @@ def transform_input_data(input_data):
 ######
 
 # Render application 
-def render_welcome_page():
-    data = {i: None for i in config["features"]}
+def render_welcome_page(mode):
+    features = config["features"][mode]
+    data = {i: None for i in features}
     if (config["last_data"] is not None): # load saved data or from deafult values from config
-        data = {i: config["last_data"][i] if i in config["last_data"] else None for i in config["features"]}
+        data = {i: config["last_data"][i] if i in config["last_data"] else None for i in features}
     else:
-        data = {i: config["sample_data"][i] if i in config["sample_data"] else None for i in config["features"]}
+        data = {i: config["sample_data"][i] if i in config["sample_data"] else None for i in features}
     # descriptions = {i: config["descriptions"][i] if i in config["descriptions"] else i for i in data}
     fields = [{"name": i, "description": i, "value": data[i]} for i in data]
     confidence = config["last_result"][1] if config["last_result"][1] is not None else None
     result = config["last_result"][0] if config["last_result"][0] is not None else None
-    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode = config["mode"])
+    return render_template('index.html', fields = fields, result = result, confidence = confidence, features = model.get_features(), mode=mode)
 
-@app.route('/', methods=['GET'])
+@app.route('/')
+@app.route('/?mode=<mode>')
 def index():
-    return render_welcome_page()
+    global model
+    mode = request.args.get('mode', "model_agroup_3month")
+    if (mode in ["model_agroup_3month", "model_agroup_6month", "model_bgroup_3month", "model_bgroup_6month"]):
+        model = config[mode]
+    return render_welcome_page(mode)
 
 # Run model and expalin solution
 @app.route('/predict', endpoint="predict", methods=['POST'])
@@ -89,15 +95,6 @@ def predict():
         config["mode"] = "model_6month"
     else:
         config["mode"] = "model_3month"
-
-    if ((config["mode"] == "model_3month") and (config["extra"] == False)):
-        model = config["model_agroup_3month"]
-    if ((config["mode"] == "model_6month") and (config["extra"] == False)):
-        model = config["model_agroup_6month"]
-    if ((config["mode"] == "model_3month") and (config["extra"] == True)):
-        model = config["model_bgroup_3month"]
-    if ((config["mode"] == "model_6month") and (config["extra"] == True)):
-        model = config["model_bgroup_6month"]
 
     input_data = {i: input_data[i] for i in model.get_features()}
 
